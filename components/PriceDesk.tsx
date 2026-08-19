@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
 import { SiteLogo } from "@/components/SiteLogo";
 import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
-import { priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
+import { isUnitedStatesBaseline, priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap").then((mod) => mod.WorldMap), {
@@ -39,42 +39,44 @@ export function PriceDesk({ catalog, rates }: Props) {
     () => [...priced].sort((a, b) => a.usdAmount - b.usdAmount || a.nameZh.localeCompare(b.nameZh, "zh")),
     [priced],
   );
+  const us = priced.find((row) => row.iso2 === "US");
   const tableBlocks = useMemo(() => {
+    const baseline = tableRows.filter((row) => isUnitedStatesBaseline(row, us));
+    const others = tableRows.filter((row) => !isUnitedStatesBaseline(row, us));
+    const orderedBaseline = [...baseline].sort((a, b) => {
+      if (a.iso2 === "US") return -1;
+      if (b.iso2 === "US") return 1;
+      if (a.pricingGroup === "usd_basket" && b.pricingGroup !== "usd_basket") return -1;
+      if (b.pricingGroup === "usd_basket" && a.pricingGroup !== "usd_basket") return 1;
+      return a.nameZh.localeCompare(b.nameZh, "zh");
+    });
     const blocks: Array<{ type: "row"; row: PricedMarket } | { type: "us-basket"; rows: PricedMarket[] }> = [];
-    let basket: PricedMarket[] = [];
-    const flushBasket = () => {
-      if (!basket.length) return;
-      const ordered = [...basket].sort((a, b) => {
-        if (a.iso2 === "US") return -1;
-        if (b.iso2 === "US") return 1;
-        return a.nameZh.localeCompare(b.nameZh, "zh");
-      });
-      blocks.push({ type: "us-basket", rows: ordered });
-      basket = [];
-    };
-    for (const row of tableRows) {
-      if (row.pricingGroup === "usd_basket") {
-        basket.push(row);
-      } else {
-        flushBasket();
-        blocks.push({ type: "row", row });
+    const usAmount = us?.usdAmount ?? orderedBaseline[0]?.usdAmount ?? 0;
+    let inserted = false;
+    for (const row of others) {
+      if (!inserted && row.usdAmount > usAmount) {
+        if (orderedBaseline.length > 0) blocks.push({ type: "us-basket", rows: orderedBaseline });
+        inserted = true;
       }
+      blocks.push({ type: "row", row });
     }
-    flushBasket();
+    if (!inserted && orderedBaseline.length > 0) {
+      blocks.push({ type: "us-basket", rows: orderedBaseline });
+    }
     return blocks;
-  }, [tableRows]);
+  }, [tableRows, us]);
   const cheapest = ranked[0];
   const dearest = ranked[ranked.length - 1];
   const spread = cheapest && dearest && cheapest.usdAmount > 0 ? dearest.usdAmount / cheapest.usdAmount : null;
-  const us = priced.find((row) => row.iso2 === "US");
   const selected = priced.find((row) => row.iso2 === selectedIso) ?? null;
 
   useEffect(() => {
     if (!selectedIso) return;
-    if (priced.some((row) => row.iso2 === selectedIso && row.pricingGroup === "usd_basket")) {
+    const row = priced.find((item) => item.iso2 === selectedIso);
+    if (row && isUnitedStatesBaseline(row, us)) {
       setUsBasketOpen(true);
     }
-  }, [priced, selectedIso]);
+  }, [priced, selectedIso, us]);
 
   const amounts = useMemo(() => {
     const map = new Map<string, number>();

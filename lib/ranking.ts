@@ -55,3 +55,9 @@ export function vsUnitedStates(row: PricedMarket, us: PricedMarket | undefined):
   if (!us || us.usdAmount === 0) return null;
   return row.usdAmount / us.usdAmount - 1;
 }
+
+export function isUnitedStatesBaseline(row: PricedMarket, us: PricedMarket | undefined): boolean {
+  if (row.iso2 === "US") return true;
+  const vs = vsUnitedStates(row, us);
+  return vs != null && Math.abs(vs) < 0.0005;
+}
