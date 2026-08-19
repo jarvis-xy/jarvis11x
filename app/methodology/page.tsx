@@ -27,6 +27,10 @@ export default function MethodologyPage() {
         <Link className="text-amber" href="/">
           返回地图
         </Link>
+        <span className="mx-2 text-rule">·</span>
+        <a className="text-amber" href="https://x.com/jarvis11x" rel="noreferrer" target="_blank">
+          @jarvis11x
+        </a>
       </p>
     </main>
   );

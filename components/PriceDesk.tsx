@@ -82,6 +82,15 @@ export function PriceDesk({ catalog, rates }: Props) {
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">Web list prices · not a checkout</p>
             <h1 className="font-display text-4xl tracking-tight">XPrice</h1>
             <p className="mt-1 max-w-xl text-sm text-mute">X Premium 官方各国 Web 标价观测站。只比价，不换区，也不替你下单。</p>
+            <a
+              href="https://x.com/jarvis11x"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 font-mono text-sm text-amber hover:text-cream"
+            >
+              <XMark />
+              @jarvis11x
+            </a>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Segment
@@ -267,6 +276,15 @@ export function PriceDesk({ catalog, rates }: Props) {
           <Link className="text-amber hover:text-cream" href="/methodology">
             方法与口径
           </Link>
+          <span className="mx-2 text-rule">·</span>
+          <a
+            className="text-amber hover:text-cream"
+            href="https://x.com/jarvis11x"
+            rel="noreferrer"
+            target="_blank"
+          >
+            @jarvis11x
+          </a>
         </p>
       </footer>
     </div>
@@ -372,6 +390,14 @@ function RankList({
         ))}
       </ol>
     </div>
+  );
+}
+
+function XMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 fill-current">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.725-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
   );
 }
 
