@@ -32,7 +32,7 @@ export type Catalog = {
   source: {
     title: string;
     url: string;
-    capturedAt: string;
+    officialUpdatedAt: string;
     channel: string;
     disclaimer: string;
   };

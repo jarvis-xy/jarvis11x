@@ -120,9 +120,9 @@ export function PriceDesk({ catalog, rates }: Props) {
         <Stat label="标价最高" value={dearest ? dearest.nameZh : "—"} detail={dearest ? formatMoney(dearest.displayAmount, display) : ""} />
         <Stat label="高低价差" value={spread ? `${spread.toFixed(1)}×` : "—"} detail="按美元折算" />
         <Stat
-          label="数据日期"
-          value={catalog.source.capturedAt}
-          detail={`汇率 ${formatRateDate(rates.date)}`}
+          label="官方表日期"
+          value={catalog.source.officialUpdatedAt}
+          detail={`本站收录 ${formatRateDate(catalog.generatedAt)} · 汇率 ${formatRateDate(rates.date)}`}
         />
       </section>
 
@@ -260,7 +260,7 @@ export function PriceDesk({ catalog, rates }: Props) {
           <a className="text-amber hover:text-cream" href={catalog.source.url} rel="noreferrer" target="_blank">
             {catalog.source.title}
           </a>
-          。渠道为 Web 公开标价，采集日期 {catalog.source.capturedAt}。未含税与支付手续费，可能与收银台不一致。
+          。渠道为 Web 公开标价。官方价目表更新日期 {catalog.source.officialUpdatedAt}，本站收录 {formatRateDate(catalog.generatedAt)}。未含税与支付手续费，可能与收银台不一致。
         </p>
         <p className="mt-2">XPrice 与 X Corp. 无关联。本站不提供换区、虚拟地址、礼品卡或代订服务。</p>
         <p className="mt-2">

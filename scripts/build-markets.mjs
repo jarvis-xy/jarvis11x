@@ -194,7 +194,7 @@ const payload = {
   source: {
     title: "X Help · About X Premium",
     url: "https://help.x.com/en/using-x/x-premium#tbpricing-bycountry",
-    capturedAt: "2026-05-06",
+    officialUpdatedAt: "2026-05-06",
     channel: "web",
     disclaimer: "Prices may vary by location, applicable taxes, and your payment method fees.",
   },

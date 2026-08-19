@@ -12,7 +12,7 @@ export default function MethodologyPage() {
           <a className="text-amber" href={CATALOG.source.url} rel="noreferrer" target="_blank">
             X 帮助中心 About X Premium
           </a>
-          的公开 Web 价目表，采集日期 {CATALOG.source.capturedAt}。这是帮助页上的标价，不是收银台实时价。
+          的公开 Web 价目表。官方价目表更新日期 {CATALOG.source.officialUpdatedAt}，本站收录 {CATALOG.generatedAt.slice(0, 10)}。这是帮助页上的标价，不是收银台实时价。
         </p>
         <p>
           美元与人民币由公开中间价折算，汇率日期显示在首页。土耳其、尼日利亚、埃及等市场的排名会随汇率变动，即使 X 没有改本币价。
