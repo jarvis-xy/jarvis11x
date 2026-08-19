@@ -1,12 +1,12 @@
 import { PriceDesk } from "@/components/PriceDesk";
 import { CATALOG } from "@/lib/catalog";
 import { loadRates } from "@/lib/rates";
-import { SITE_URL, xpriceMetadata } from "@/lib/site";
+import { xpriceMetadata } from "@/lib/site";
 
 export const revalidate = 3600;
-export const metadata = xpriceMetadata(SITE_URL);
+export const metadata = xpriceMetadata();
 
-export default async function HomePage() {
+export default async function XPricePage() {
   const rates = await loadRates();
   return <PriceDesk catalog={CATALOG} rates={rates} />;
 }

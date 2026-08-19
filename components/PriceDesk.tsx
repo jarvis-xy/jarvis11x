@@ -8,6 +8,7 @@ import { SiteLogo } from "@/components/SiteLogo";
 import { XHandleLink } from "@/components/XHandleLink";
 import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
 import { isUnitedStatesBaseline, priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
+import { XPRICE_METHODOLOGY_PATH, XPRICE_PATH } from "@/lib/site";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap").then((mod) => mod.WorldMap), {
@@ -115,9 +116,11 @@ export function PriceDesk({ catalog, rates }: Props) {
         <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">Web list prices · not a checkout</p>
-            <h1 className="mt-1 flex items-center gap-2.5 font-display text-4xl tracking-tight">
-              <SiteLogo className="h-9 w-9" />
-              XPrice
+            <h1 className="mt-1 font-display text-4xl tracking-tight">
+              <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
+                <SiteLogo className="h-9 w-9" />
+                XPrice
+              </Link>
             </h1>
             <p className="mt-1 max-w-xl text-sm text-mute">
               X Premium 官方各国 Web 标价观测站。本站由 <XHandleLink /> 开发。
@@ -303,7 +306,7 @@ export function PriceDesk({ catalog, rates }: Props) {
           免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。本站不提供换区、虚拟地址、礼品卡或代订服务。
         </p>
         <p className="mt-2">
-          <Link className="text-amber hover:text-cream" href="/methodology">
+          <Link className="text-amber hover:text-cream" href={XPRICE_METHODOLOGY_PATH}>
             方法与口径
           </Link>
         </p>
