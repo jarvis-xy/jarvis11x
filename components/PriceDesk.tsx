@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
 import { SiteLogo } from "@/components/SiteLogo";
 import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
@@ -28,6 +28,7 @@ export function PriceDesk({ catalog, rates }: Props) {
   const [display, setDisplay] = useState<DisplayCurrency>("CNY");
   const [query, setQuery] = useState("");
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
+  const [usBasketOpen, setUsBasketOpen] = useState(false);
 
   const priced = useMemo(
     () => priceAll(catalog.markets, tier, cycle, display, rates),
@@ -38,11 +39,42 @@ export function PriceDesk({ catalog, rates }: Props) {
     () => [...priced].sort((a, b) => a.usdAmount - b.usdAmount || a.nameZh.localeCompare(b.nameZh, "zh")),
     [priced],
   );
+  const tableBlocks = useMemo(() => {
+    const blocks: Array<{ type: "row"; row: PricedMarket } | { type: "us-basket"; rows: PricedMarket[] }> = [];
+    let basket: PricedMarket[] = [];
+    const flushBasket = () => {
+      if (!basket.length) return;
+      const ordered = [...basket].sort((a, b) => {
+        if (a.iso2 === "US") return -1;
+        if (b.iso2 === "US") return 1;
+        return a.nameZh.localeCompare(b.nameZh, "zh");
+      });
+      blocks.push({ type: "us-basket", rows: ordered });
+      basket = [];
+    };
+    for (const row of tableRows) {
+      if (row.pricingGroup === "usd_basket") {
+        basket.push(row);
+      } else {
+        flushBasket();
+        blocks.push({ type: "row", row });
+      }
+    }
+    flushBasket();
+    return blocks;
+  }, [tableRows]);
   const cheapest = ranked[0];
   const dearest = ranked[ranked.length - 1];
   const spread = cheapest && dearest && cheapest.usdAmount > 0 ? dearest.usdAmount / cheapest.usdAmount : null;
   const us = priced.find((row) => row.iso2 === "US");
   const selected = priced.find((row) => row.iso2 === selectedIso) ?? null;
+
+  useEffect(() => {
+    if (!selectedIso) return;
+    if (priced.some((row) => row.iso2 === selectedIso && row.pricingGroup === "usd_basket")) {
+      setUsBasketOpen(true);
+    }
+  }, [priced, selectedIso]);
 
   const amounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -222,7 +254,7 @@ export function PriceDesk({ catalog, rates }: Props) {
         <div className="mb-4">
           <h2 className="font-display text-2xl">完整标价表</h2>
           <p className="text-sm text-mute">
-            列出全部 {tableRows.length} 个有标价的市场。美价折扣按美国 Web 标价折算，负数为更便宜。
+            列出全部 {tableRows.length} 个有标价的市场。美区同价默认折叠，点击展开。美价折扣按美国 Web 标价折算，负数为更便宜。
           </p>
         </div>
         <div className="overflow-x-auto border border-rule">
@@ -238,25 +270,32 @@ export function PriceDesk({ catalog, rates }: Props) {
               </tr>
             </thead>
             <tbody>
-              {tableRows.map((row) => (
-                <tr
-                  key={row.iso2}
-                  className="cursor-pointer border-t border-rule hover:bg-raised"
-                  onClick={() => setSelectedIso(row.iso2)}
-                >
-                  <td className="px-3 py-2">
-                    {row.nameZh}
-                    <span className="ml-2 font-mono text-xs text-mute">{row.iso2}</span>
-                  </td>
-                  <td className="px-3 py-2 text-mute">{GROUP_LABEL[row.pricingGroup]}</td>
-                  <td className="px-3 py-2 font-mono">{formatMoney(row.localAmount, row.currency ?? "USD")}</td>
-                  <td className="px-3 py-2 font-mono text-amber">{formatMoney(row.displayAmount, display)}</td>
-                  <td className="px-3 py-2 font-mono">{formatMoney(row.equivalentMonthDisplay, display)}</td>
-                  <td className="px-3 py-2">
-                    <UsDiscount row={row} us={us} />
-                  </td>
-                </tr>
-              ))}
+              {tableBlocks.map((block) => {
+                if (block.type === "row") {
+                  return (
+                    <PriceRow
+                      key={block.row.iso2}
+                      row={block.row}
+                      display={display}
+                      us={us}
+                      onSelect={setSelectedIso}
+                    />
+                  );
+                }
+                const representative = block.rows.find((row) => row.iso2 === "US") ?? block.rows[0];
+                return (
+                  <UsBasketRows
+                    key="us-basket"
+                    rows={block.rows}
+                    representative={representative}
+                    open={usBasketOpen}
+                    display={display}
+                    us={us}
+                    onToggle={() => setUsBasketOpen((value) => !value)}
+                    onSelect={setSelectedIso}
+                  />
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -311,6 +350,83 @@ function Segment<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+function PriceRow({
+  row,
+  display,
+  us,
+  onSelect,
+  inset = false,
+}: {
+  row: PricedMarket;
+  display: DisplayCurrency;
+  us?: PricedMarket;
+  onSelect: (iso: string) => void;
+  inset?: boolean;
+}) {
+  return (
+    <tr className="cursor-pointer border-t border-rule hover:bg-raised" onClick={() => onSelect(row.iso2)}>
+      <td className={`px-3 py-2 ${inset ? "pl-8" : ""}`}>
+        {row.nameZh}
+        <span className="ml-2 font-mono text-xs text-mute">{row.iso2}</span>
+      </td>
+      <td className="px-3 py-2 text-mute">{GROUP_LABEL[row.pricingGroup]}</td>
+      <td className="px-3 py-2 font-mono">{formatMoney(row.localAmount, row.currency ?? "USD")}</td>
+      <td className="px-3 py-2 font-mono text-amber">{formatMoney(row.displayAmount, display)}</td>
+      <td className="px-3 py-2 font-mono">{formatMoney(row.equivalentMonthDisplay, display)}</td>
+      <td className="px-3 py-2">
+        <UsDiscount row={row} us={us} />
+      </td>
+    </tr>
+  );
+}
+
+function UsBasketRows({
+  rows,
+  representative,
+  open,
+  display,
+  us,
+  onToggle,
+  onSelect,
+}: {
+  rows: PricedMarket[];
+  representative: PricedMarket;
+  open: boolean;
+  display: DisplayCurrency;
+  us?: PricedMarket;
+  onToggle: () => void;
+  onSelect: (iso: string) => void;
+}) {
+  return (
+    <>
+      <tr
+        className="cursor-pointer border-t border-rule bg-panel hover:bg-raised"
+        aria-expanded={open}
+        onClick={onToggle}
+      >
+        <td className="px-3 py-2">
+          <span className="mr-2 inline-block font-mono text-amber">{open ? "▾" : "▸"}</span>
+          美区同价
+          <span className="ml-2 font-mono text-xs text-mute">{rows.length} 个市场</span>
+          <span className="ml-2 text-xs text-mute">{open ? "点击收起" : "点击展开"}</span>
+        </td>
+        <td className="px-3 py-2 text-mute">{GROUP_LABEL[representative.pricingGroup]}</td>
+        <td className="px-3 py-2 font-mono">{formatMoney(representative.localAmount, representative.currency ?? "USD")}</td>
+        <td className="px-3 py-2 font-mono text-amber">{formatMoney(representative.displayAmount, display)}</td>
+        <td className="px-3 py-2 font-mono">{formatMoney(representative.equivalentMonthDisplay, display)}</td>
+        <td className="px-3 py-2">
+          <span className="text-mute">基准</span>
+        </td>
+      </tr>
+      {open
+        ? rows.map((row) => (
+            <PriceRow key={row.iso2} row={row} display={display} us={us} onSelect={onSelect} inset />
+          ))
+        : null}
+    </>
   );
 }
 
