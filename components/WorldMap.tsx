@@ -21,6 +21,11 @@ type GeoCountry = {
 
 const EMPTY = "#e7e2d8";
 
+/** Natural Earth 110m 没有香港等小型政区，用坐标点叠在地图上。 */
+const MAP_PINS: Array<{ iso2: string; lon: number; lat: number; label: string }> = [
+  { iso2: "HK", lon: 114.1694, lat: 22.3193, label: "香港" },
+];
+
 function isoFromFeatureId(id: string | number | undefined): string | null {
   if (id == null) return null;
   const numeric = String(id).replace(/^0+/, "");
@@ -64,15 +69,15 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
   const min = values.length ? Math.min(...values) : 0;
   const max = values.length ? Math.max(...values) : 1;
 
-  const path = useMemo(() => {
-    const projection = geoNaturalEarth1().fitExtent(
+  const { path, projection } = useMemo(() => {
+    const nextProjection = geoNaturalEarth1().fitExtent(
       [
         [8, 12],
         [width - 8, height - 8],
       ],
       { type: "Sphere" },
     );
-    return geoPath(projection);
+    return { path: geoPath(nextProjection), projection: nextProjection };
   }, [width, height]);
 
   return (
@@ -104,6 +109,45 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
               onMouseLeave={() => setHover(null)}
               onClick={() => iso && onSelect(iso)}
             />
+          );
+        })}
+        {MAP_PINS.map((pin) => {
+          const point = projection([pin.lon, pin.lat]);
+          if (!point) return null;
+          const [x, y] = point;
+          const amount = amounts.get(pin.iso2);
+          const fill = amount == null ? EMPTY : heatColor(normalize(amount, min, max));
+          const active = pin.iso2 === selectedIso;
+          const hovered = hover?.iso === pin.iso2;
+          return (
+            <g
+              key={pin.iso2}
+              className="cursor-pointer"
+              aria-label={MARKET_BY_ISO[pin.iso2]?.nameZh ?? pin.label}
+              onMouseEnter={(event) => moveHover(wrapRef.current, pin.iso2, event, setHover)}
+              onMouseMove={(event) => moveHover(wrapRef.current, pin.iso2, event, setHover)}
+              onMouseLeave={() => setHover(null)}
+              onClick={() => onSelect(pin.iso2)}
+            >
+              <circle
+                cx={x}
+                cy={y}
+                r={active || hovered ? 7 : 5.5}
+                fill={fill}
+                stroke={active ? "#c05621" : "#1c1917"}
+                strokeWidth={active ? 2 : 1.4}
+              />
+              <text
+                x={x + 10}
+                y={y + 4}
+                fill="#c05621"
+                fontSize={12}
+                fontFamily="ui-sans-serif, system-ui, sans-serif"
+                style={{ pointerEvents: "none" }}
+              >
+                {pin.label}
+              </text>
+            </g>
           );
         })}
       </svg>
