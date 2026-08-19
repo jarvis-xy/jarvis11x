@@ -75,7 +75,7 @@ export function PriceDesk({ catalog, rates }: Props) {
   const ticker = ranked.filter((row) => row.pricingGroup === "localized").slice(0, 24);
 
   return (
-    <div className="min-h-screen bg-ink text-cream">
+    <div className="min-h-screen bg-white text-cream">
       <header className="border-b border-rule">
         <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -138,7 +138,7 @@ export function PriceDesk({ catalog, rates }: Props) {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="搜索国家、地区或代码，例如 日本 / JP"
-                className="w-full border border-rule bg-ink px-3 py-2 text-sm text-cream placeholder:text-mute"
+                className="w-full border border-rule bg-white px-3 py-2 text-sm text-cream placeholder:text-mute"
               />
               {hits.length > 0 ? (
                 <ul className="absolute z-20 mt-1 w-full border border-rule bg-panel">
@@ -289,7 +289,7 @@ function Segment<T extends string>({
           key={option.value}
           type="button"
           aria-pressed={option.value === value}
-          className={`px-3 py-2 text-sm ${option.value === value ? "bg-amber text-ink" : "bg-ink text-cream hover:bg-raised"}`}
+          className={`px-3 py-2 text-sm ${option.value === value ? "bg-amber text-white" : "bg-white text-cream hover:bg-raised"}`}
           onClick={() => onChange(option.value)}
         >
           {option.label}
@@ -301,7 +301,7 @@ function Segment<T extends string>({
 
 function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="bg-ink px-4 py-3">
+    <div className="bg-white px-4 py-3">
       <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-mute">{label}</div>
       <div className="font-display text-xl text-cream">{value}</div>
       <div className="font-mono text-xs text-amber">{detail}</div>

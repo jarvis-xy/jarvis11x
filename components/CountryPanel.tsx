@@ -42,7 +42,7 @@ export function CountryPanel({ iso, priced, us, display, tier, cycle, onClose }:
           </p>
         ) : (
           <>
-            <div className="mb-4 border border-rule bg-ink px-3 py-3">
+            <div className="mb-4 border border-rule bg-white px-3 py-3">
               <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-mute">
                 {TIER_LABEL[tier]} · {CYCLE_LABEL[cycle]}
               </div>

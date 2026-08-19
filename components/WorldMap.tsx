@@ -19,7 +19,7 @@ type GeoCountry = {
   geometry: GeoPermissibleObjects;
 };
 
-const EMPTY = "#2a261f";
+const EMPTY = "#e7e2d8";
 
 function isoFromFeatureId(id: string | number | undefined): string | null {
   if (id == null) return null;
@@ -79,11 +79,11 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
     <div ref={wrapRef} className="relative min-h-[240px] w-full">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="block h-auto w-full"
+        className="block h-auto w-full outline-none"
         role="img"
         aria-label="X Premium 全球标价地图"
       >
-        <rect width={width} height={height} fill="#14110e" />
+        <rect width={width} height={height} fill="#ffffff" />
         {countries.map((country, index) => {
           const iso = isoFromFeatureId(country.id);
           const amount = iso ? amounts.get(iso) : undefined;
@@ -98,19 +98,11 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
               fill={fill}
               data-active={iso === selectedIso ? "true" : "false"}
               data-hover={iso && hover?.iso === iso ? "true" : "false"}
-              tabIndex={iso ? 0 : -1}
               aria-label={iso ? (MARKET_BY_ISO[iso]?.nameZh ?? iso) : "未知地区"}
               onMouseEnter={(event) => iso && moveHover(wrapRef.current, iso, event, setHover)}
               onMouseMove={(event) => iso && moveHover(wrapRef.current, iso, event, setHover)}
               onMouseLeave={() => setHover(null)}
               onClick={() => iso && onSelect(iso)}
-              onKeyDown={(event) => {
-                if (!iso) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onSelect(iso);
-                }
-              }}
             />
           );
         })}

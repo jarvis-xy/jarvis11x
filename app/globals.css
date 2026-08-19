@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
 body {
   min-height: 100%;
-  background: #14110e;
-  color: #f0e6d2;
+  background: #ffffff;
+  color: #1c1917;
 }
 
 body {
@@ -23,12 +23,12 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #e4b060;
+  outline: 2px solid #c05621;
   outline-offset: 2px;
 }
 
 .hairline {
-  border: 1px solid #6e5e48;
+  border: 1px solid #ddd6cb;
 }
 
 @keyframes ticker {
@@ -51,17 +51,24 @@ body {
 }
 
 .map-land {
-  stroke: #14110e;
+  stroke: #ffffff;
   stroke-width: 0.6;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
   transition: fill 160ms ease;
 }
 
+.map-land:focus,
+.map-land:focus-visible {
+  outline: none;
+}
+
 .map-land[data-active="true"] {
-  stroke: #e4b060;
+  stroke: #c05621;
   stroke-width: 1.4;
 }
 
 .map-land[data-hover="true"] {
-  stroke: #f0e6d2;
+  stroke: #1c1917;
   stroke-width: 1.2;
 }
