@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
 import { SiteLogo } from "@/components/SiteLogo";
+import { XHandleLink } from "@/components/XHandleLink";
 import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
 import { isUnitedStatesBaseline, priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
@@ -119,16 +120,7 @@ export function PriceDesk({ catalog, rates }: Props) {
               XPrice
             </h1>
             <p className="mt-1 max-w-xl text-sm text-mute">
-              X Premium 官方各国 Web 标价观测站。本站由{" "}
-              <a
-                href="https://x.com/jarvis11x"
-                target="_blank"
-                rel="noreferrer"
-                className="text-amber hover:text-cream"
-              >
-                @jarvis11x
-              </a>{" "}
-              开发。
+              X Premium 官方各国 Web 标价观测站。本站由 <XHandleLink /> 开发。
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -305,16 +297,7 @@ export function PriceDesk({ catalog, rates }: Props) {
 
       <footer className="border-t border-rule px-4 py-6 text-sm text-mute">
         <p>
-          本站数据由{" "}
-          <a
-            className="text-amber hover:text-cream"
-            href="https://x.com/jarvis11x"
-            rel="noreferrer"
-            target="_blank"
-          >
-            @jarvis11x
-          </a>{" "}
-          整理，如有误差，请以官方为准。
+          本站数据由 <XHandleLink /> 整理，如有误差，请以官方为准。
         </p>
         <p className="mt-2">
           免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。本站不提供换区、虚拟地址、礼品卡或代订服务。

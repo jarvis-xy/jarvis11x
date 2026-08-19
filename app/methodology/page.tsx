@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteLogo } from "@/components/SiteLogo";
+import { XHandleLink } from "@/components/XHandleLink";
 import { CATALOG } from "@/lib/catalog";
 
 export default function MethodologyPage() {
@@ -12,11 +13,7 @@ export default function MethodologyPage() {
       </h1>
       <div className="mt-6 space-y-4 text-sm leading-7 text-mute">
         <p>
-          本站数据由{" "}
-          <a className="text-amber" href="https://x.com/jarvis11x" rel="noreferrer" target="_blank">
-            @jarvis11x
-          </a>{" "}
-          整理。页面展示的是各国 Web 标价及公开中间价折算，不是收银台实时价。如有误差，请以官方为准。
+          本站数据由 <XHandleLink className="text-amber" /> 整理。页面展示的是各国 Web 标价及公开中间价折算，不是收银台实时价。如有误差，请以官方为准。
         </p>
         <p>
           美元与人民币由公开中间价折算，汇率日期显示在首页。部分市场的排名会随汇率变动，即使本币标价没有变化。数据整理日期{" "}
@@ -35,9 +32,7 @@ export default function MethodologyPage() {
           返回地图
         </Link>
         <span className="mx-2 text-rule">·</span>
-        <a className="text-amber" href="https://x.com/jarvis11x" rel="noreferrer" target="_blank">
-          @jarvis11x
-        </a>
+        <XHandleLink className="text-amber" />
       </p>
     </main>
   );
