@@ -4,7 +4,7 @@ export const alt = "XPrice · X Premium 全球标价图";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const COPY = "XPrice  X Premium 全球标价图  只比价，不换区，也不替你下单  便宜 贵  WEB LIST PRICES  jarvis11x.space  @jarvis11x";
+const COPY = "XPrice  X Premium 全球标价图  本站由 @jarvis11x 开发  便宜 贵  WEB LIST PRICES  jarvis11x.space";
 
 async function loadGoogleFont(family: string, weight: number, text: string) {
   const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&text=${encodeURIComponent(text)}`;
@@ -113,7 +113,7 @@ export default async function OpenGraphImage() {
                 color: "#6e675e",
               }}
             >
-              只比价，不换区，也不替你下单
+              本站由 @jarvis11x 开发
             </div>
           </div>
 

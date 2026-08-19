@@ -20,7 +20,7 @@ const mono = Chivo_Mono({
 
 const SITE_URL = "https://jarvis11x.space";
 const SITE_TITLE = "XPrice · X Premium 全球标价图";
-const SITE_DESCRIPTION = "把 X Premium 各国 Web 订阅标价换算成可比较的全球分布图。只浏览比价，不提供换区或代订。";
+const SITE_DESCRIPTION = "X Premium 各国 Web 标价观测站。本站由 @jarvis11x 开发。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
