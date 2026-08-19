@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
+import { SiteLogo } from "@/components/SiteLogo";
 import { CYCLE_LABEL, formatMoney, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
 import { priceAll, rankUnique } from "@/lib/ranking";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
@@ -80,7 +81,10 @@ export function PriceDesk({ catalog, rates }: Props) {
         <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">Web list prices · not a checkout</p>
-            <h1 className="font-display text-4xl tracking-tight">XPrice</h1>
+            <h1 className="mt-1 flex items-center gap-2.5 font-display text-4xl tracking-tight">
+              <SiteLogo className="h-9 w-9" />
+              XPrice
+            </h1>
             <p className="mt-1 max-w-xl text-sm text-mute">X Premium 官方各国 Web 标价观测站。只比价，不换区，也不替你下单。</p>
             <a
               href="https://x.com/jarvis11x"
@@ -129,9 +133,9 @@ export function PriceDesk({ catalog, rates }: Props) {
         <Stat label="标价最高" value={dearest ? dearest.nameZh : "—"} detail={dearest ? formatMoney(dearest.displayAmount, display) : ""} />
         <Stat label="高低价差" value={spread ? `${spread.toFixed(1)}×` : "—"} detail="按美元折算" />
         <Stat
-          label="官方表日期"
-          value={catalog.source.officialUpdatedAt}
-          detail={`本站收录 ${formatRateDate(catalog.generatedAt)} · 汇率 ${formatRateDate(rates.date)}`}
+          label="整理日期"
+          value={formatRateDate(catalog.generatedAt)}
+          detail={`汇率 ${formatRateDate(rates.date)}`}
         />
       </section>
 
@@ -265,18 +269,7 @@ export function PriceDesk({ catalog, rates }: Props) {
 
       <footer className="border-t border-rule px-4 py-6 text-sm text-mute">
         <p>
-          数据来源：
-          <a className="text-amber hover:text-cream" href={catalog.source.url} rel="noreferrer" target="_blank">
-            {catalog.source.title}
-          </a>
-          。渠道为 Web 公开标价。官方价目表更新日期 {catalog.source.officialUpdatedAt}，本站收录 {formatRateDate(catalog.generatedAt)}。未含税与支付手续费，可能与收银台不一致。
-        </p>
-        <p className="mt-2">XPrice 与 X Corp. 无关联。本站不提供换区、虚拟地址、礼品卡或代订服务。</p>
-        <p className="mt-2">
-          <Link className="text-amber hover:text-cream" href="/methodology">
-            方法与口径
-          </Link>
-          <span className="mx-2 text-rule">·</span>
+          本站数据由{" "}
           <a
             className="text-amber hover:text-cream"
             href="https://x.com/jarvis11x"
@@ -284,7 +277,16 @@ export function PriceDesk({ catalog, rates }: Props) {
             target="_blank"
           >
             @jarvis11x
-          </a>
+          </a>{" "}
+          整理，如有误差，请以官方为准。
+        </p>
+        <p className="mt-2">
+          免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。本站不提供换区、虚拟地址、礼品卡或代订服务。
+        </p>
+        <p className="mt-2">
+          <Link className="text-amber hover:text-cream" href="/methodology">
+            方法与口径
+          </Link>
         </p>
       </footer>
     </div>

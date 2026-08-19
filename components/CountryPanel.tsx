@@ -38,7 +38,7 @@ export function CountryPanel({ iso, priced, us, display, tier, cycle, onClose }:
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {market.availability === "unpublished" || !market.prices || !market.currency ? (
           <p className="text-sm leading-6 text-cream">
-            官方帮助中心价目表未列出该市场，因此没有可换算的 Web 标价。
+            本站暂未收录该市场标价，因此没有可换算的数字。
           </p>
         ) : (
           <>

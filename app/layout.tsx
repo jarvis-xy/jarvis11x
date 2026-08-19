@@ -20,7 +20,7 @@ const mono = Chivo_Mono({
 
 export const metadata: Metadata = {
   title: "XPrice · X Premium 全球标价图",
-  description: "把 X Premium 官方各国 Web 订阅标价换算成可比较的全球分布图。只浏览比价，不提供换区或代订。",
+  description: "把 X Premium 各国 Web 订阅标价换算成可比较的全球分布图。只浏览比价，不提供换区或代订。",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
