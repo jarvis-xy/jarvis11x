@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
 import { SiteLogo } from "@/components/SiteLogo";
-import { CYCLE_LABEL, formatMoney, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
-import { priceAll, rankUnique } from "@/lib/ranking";
+import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
+import { priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap").then((mod) => mod.WorldMap), {
@@ -28,16 +28,15 @@ export function PriceDesk({ catalog, rates }: Props) {
   const [display, setDisplay] = useState<DisplayCurrency>("CNY");
   const [query, setQuery] = useState("");
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
-  const [localizedOnly, setLocalizedOnly] = useState(true);
 
   const priced = useMemo(
     () => priceAll(catalog.markets, tier, cycle, display, rates),
     [catalog.markets, cycle, display, rates, tier],
   );
   const ranked = useMemo(() => rankUnique(priced), [priced]);
-  const board = useMemo(
-    () => (localizedOnly ? ranked.filter((row) => row.pricingGroup === "localized" || row.iso2 === "US") : ranked),
-    [localizedOnly, ranked],
+  const tableRows = useMemo(
+    () => [...priced].sort((a, b) => a.usdAmount - b.usdAmount || a.nameZh.localeCompare(b.nameZh, "zh")),
+    [priced],
   );
   const cheapest = ranked[0];
   const dearest = ranked[ranked.length - 1];
@@ -220,19 +219,11 @@ export function PriceDesk({ catalog, rates }: Props) {
       )}
 
       <section className="border-t border-rule px-4 py-6">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="font-display text-2xl">完整标价表</h2>
-            <p className="text-sm text-mute">同价篮子默认合并。打开筛选可只看做了本地化定价的市场。</p>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-cream">
-            <input
-              type="checkbox"
-              checked={localizedOnly}
-              onChange={(event) => setLocalizedOnly(event.target.checked)}
-            />
-            仅本地化标价
-          </label>
+        <div className="mb-4">
+          <h2 className="font-display text-2xl">完整标价表</h2>
+          <p className="text-sm text-mute">
+            列出全部 {tableRows.length} 个有标价的市场。美价折扣按美国 Web 标价折算，负数为更便宜。
+          </p>
         </div>
         <div className="overflow-x-auto border border-rule">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -243,11 +234,11 @@ export function PriceDesk({ catalog, rates }: Props) {
                 <th className="px-3 py-2 font-medium">本币</th>
                 <th className="px-3 py-2 font-medium">{display === "CNY" ? "人民币" : "美元"}</th>
                 <th className="px-3 py-2 font-medium">年付等效月费</th>
-                <th className="px-3 py-2 font-medium">同价</th>
+                <th className="px-3 py-2 font-medium">美价折扣</th>
               </tr>
             </thead>
             <tbody>
-              {board.map((row) => (
+              {tableRows.map((row) => (
                 <tr
                   key={row.iso2}
                   className="cursor-pointer border-t border-rule hover:bg-raised"
@@ -261,7 +252,9 @@ export function PriceDesk({ catalog, rates }: Props) {
                   <td className="px-3 py-2 font-mono">{formatMoney(row.localAmount, row.currency ?? "USD")}</td>
                   <td className="px-3 py-2 font-mono text-amber">{formatMoney(row.displayAmount, display)}</td>
                   <td className="px-3 py-2 font-mono">{formatMoney(row.equivalentMonthDisplay, display)}</td>
-                  <td className="px-3 py-2 text-mute">{row.samePriceCount > 1 ? `${row.samePriceCount} 国` : "—"}</td>
+                  <td className="px-3 py-2">
+                    <UsDiscount row={row} us={us} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -319,6 +312,15 @@ function Segment<T extends string>({
       ))}
     </div>
   );
+}
+
+function UsDiscount({ row, us }: { row: PricedMarket; us?: PricedMarket }) {
+  const vs = vsUnitedStates(row, us);
+  if (vs == null) return <span className="text-mute">—</span>;
+  if (row.iso2 === "US" || Math.abs(vs) < 0.0005) {
+    return <span className="text-mute">基准</span>;
+  }
+  return <span className={`font-mono ${vs < 0 ? "text-cheap" : "text-dear"}`}>{formatSignedPct(vs)}</span>;
 }
 
 function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
