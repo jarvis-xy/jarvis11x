@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: #14110e;
+  color: #f0e6d2;
+}
+
+body {
+  font-feature-settings: "ss01" on, "tnum" on;
+}
+
+::selection {
+  background: #e4b060;
+  color: #14110e;
+}
+
+:focus-visible {
+  outline: 2px solid #e4b060;
+  outline-offset: 2px;
+}
+
+.hairline {
+  border: 1px solid #6e5e48;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  animation: ticker 48s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+.map-land {
+  stroke: #14110e;
+  stroke-width: 0.6;
+  transition: fill 160ms ease;
+}
+
+.map-land[data-active="true"] {
+  stroke: #e4b060;
+  stroke-width: 1.4;
+}
+
+.map-land[data-hover="true"] {
+  stroke: #f0e6d2;
+  stroke-width: 1.2;
+}
