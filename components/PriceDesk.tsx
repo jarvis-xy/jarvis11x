@@ -318,14 +318,12 @@ export function PriceDesk({ catalog, rates }: Props) {
       <footer className="border-t border-rule px-4 py-6 text-sm text-mute">
         <p>
           {t("footerLead")} <XHandleLink />
-          {t("footerTail")}
-        </p>
-        <p className="mt-2">{t("disclaimer")}</p>
-        <p className="mt-2">
+          {t("footerTail")}{" "}
           <Link className="text-amber hover:text-cream" href={XPRICE_METHODOLOGY_PATH}>
             {t("methodology")}
           </Link>
         </p>
+        <p className="mt-2">{t("disclaimer")}</p>
       </footer>
     </div>
   );
