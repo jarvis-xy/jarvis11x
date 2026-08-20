@@ -3,8 +3,10 @@
 import { geoNaturalEarth1, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
+import { useLocale } from "@/components/LocaleProvider";
 import { MARKET_BY_ISO, MARKET_BY_NUMERIC } from "@/lib/catalog";
 import { heatColor, normalize } from "@/lib/color";
+import { marketName } from "@/lib/i18n";
 
 type Props = {
   amounts: Map<string, number>;
@@ -22,9 +24,7 @@ type GeoCountry = {
 const EMPTY = "#e7e2d8";
 
 /** Natural Earth 110m 没有香港等小型政区，用坐标点叠在地图上。 */
-const MAP_PINS: Array<{ iso2: string; lon: number; lat: number; label: string }> = [
-  { iso2: "HK", lon: 114.1694, lat: 22.3193, label: "香港" },
-];
+const MAP_PINS: Array<{ iso2: string; lon: number; lat: number }> = [{ iso2: "HK", lon: 114.1694, lat: 22.3193 }];
 
 function isoFromFeatureId(id: string | number | undefined): string | null {
   if (id == null) return null;
@@ -33,6 +33,7 @@ function isoFromFeatureId(id: string | number | undefined): string | null {
 }
 
 export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
+  const { locale, t } = useLocale();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(960);
   const [countries, setCountries] = useState<GeoCountry[]>([]);
@@ -86,7 +87,7 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
         viewBox={`0 0 ${width} ${height}`}
         className="block h-auto w-full outline-none"
         role="img"
-        aria-label="X Premium 全球标价地图"
+        aria-label={t("mapAria")}
       >
         <rect width={width} height={height} fill="#ffffff" />
         {countries.map((country, index) => {
@@ -103,7 +104,7 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
               fill={fill}
               data-active={iso === selectedIso ? "true" : "false"}
               data-hover={iso && hover?.iso === iso ? "true" : "false"}
-              aria-label={iso ? (MARKET_BY_ISO[iso]?.nameZh ?? iso) : "未知地区"}
+              aria-label={iso ? (MARKET_BY_ISO[iso] ? marketName(MARKET_BY_ISO[iso], locale) : iso) : t("unknownRegion")}
               onMouseEnter={(event) => iso && moveHover(wrapRef.current, iso, event, setHover)}
               onMouseMove={(event) => iso && moveHover(wrapRef.current, iso, event, setHover)}
               onMouseLeave={() => setHover(null)}
@@ -123,7 +124,7 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
             <g
               key={pin.iso2}
               className="cursor-pointer"
-              aria-label={MARKET_BY_ISO[pin.iso2]?.nameZh ?? pin.label}
+              aria-label={MARKET_BY_ISO[pin.iso2] ? marketName(MARKET_BY_ISO[pin.iso2], locale) : pin.iso2}
               onMouseEnter={(event) => moveHover(wrapRef.current, pin.iso2, event, setHover)}
               onMouseMove={(event) => moveHover(wrapRef.current, pin.iso2, event, setHover)}
               onMouseLeave={() => setHover(null)}
@@ -145,7 +146,7 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
                 fontFamily="ui-sans-serif, system-ui, sans-serif"
                 style={{ pointerEvents: "none" }}
               >
-                {pin.label}
+                {MARKET_BY_ISO[pin.iso2] ? marketName(MARKET_BY_ISO[pin.iso2], locale) : pin.iso2}
               </text>
             </g>
           );
@@ -160,10 +161,10 @@ export function WorldMap({ amounts, labels, selectedIso, onSelect }: Props) {
           }}
         >
           <div className="font-mono text-mute">{hover.iso}</div>
-          <div className="font-display text-sm text-cream">{MARKET_BY_ISO[hover.iso]?.nameZh ?? hover.iso}</div>
-          <div className="mt-1 font-mono text-amber">
-            {labels.get(hover.iso) ?? "无折算"}
+          <div className="font-display text-sm text-cream">
+            {MARKET_BY_ISO[hover.iso] ? marketName(MARKET_BY_ISO[hover.iso], locale) : hover.iso}
           </div>
+          <div className="mt-1 font-mono text-amber">{labels.get(hover.iso) ?? t("noFx")}</div>
         </div>
       ) : null}
     </div>

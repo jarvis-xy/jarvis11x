@@ -4,16 +4,24 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CountryPanel } from "@/components/CountryPanel";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLocale } from "@/components/LocaleProvider";
 import { SiteLogo } from "@/components/SiteLogo";
 import { XHandleLink } from "@/components/XHandleLink";
-import { CYCLE_LABEL, formatMoney, formatSignedPct, GROUP_LABEL, TIER_LABEL } from "@/lib/money";
+import { cycleLabel, groupLabel, marketName } from "@/lib/i18n";
+import { formatMoney, formatSignedPct, TIER_LABEL } from "@/lib/money";
 import { isUnitedStatesBaseline, priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
 import { XPRICE_METHODOLOGY_PATH, XPRICE_PATH } from "@/lib/site";
 import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from "@/lib/types";
 
+function MapLoading() {
+  const { t } = useLocale();
+  return <div className="flex h-[42vw] min-h-[240px] items-center justify-center text-sm text-mute">{t("mapLoading")}</div>;
+}
+
 const WorldMap = dynamic(() => import("@/components/WorldMap").then((mod) => mod.WorldMap), {
   ssr: false,
-  loading: () => <div className="flex h-[42vw] min-h-[240px] items-center justify-center text-sm text-mute">正在铺地图</div>,
+  loading: () => <MapLoading />,
 });
 
 const TIERS: Tier[] = ["basic", "premium", "plus"];
@@ -25,12 +33,14 @@ type Props = {
 };
 
 export function PriceDesk({ catalog, rates }: Props) {
+  const { locale, t } = useLocale();
   const [tier, setTier] = useState<Tier>("premium");
   const [cycle, setCycle] = useState<Cycle>("month");
   const [display, setDisplay] = useState<DisplayCurrency>("CNY");
   const [query, setQuery] = useState("");
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
   const [usBasketOpen, setUsBasketOpen] = useState(false);
+  const money = (amount: number, currency: string) => formatMoney(amount, currency, locale);
 
   const priced = useMemo(
     () => priceAll(catalog.markets, tier, cycle, display, rates),
@@ -38,8 +48,11 @@ export function PriceDesk({ catalog, rates }: Props) {
   );
   const ranked = useMemo(() => rankUnique(priced), [priced]);
   const tableRows = useMemo(
-    () => [...priced].sort((a, b) => a.usdAmount - b.usdAmount || a.nameZh.localeCompare(b.nameZh, "zh")),
-    [priced],
+    () =>
+      [...priced].sort(
+        (a, b) => a.usdAmount - b.usdAmount || marketName(a, locale).localeCompare(marketName(b, locale), locale),
+      ),
+    [locale, priced],
   );
   const us = priced.find((row) => row.iso2 === "US");
   const tableBlocks = useMemo(() => {
@@ -50,7 +63,7 @@ export function PriceDesk({ catalog, rates }: Props) {
       if (b.iso2 === "US") return 1;
       if (a.pricingGroup === "usd_basket" && b.pricingGroup !== "usd_basket") return -1;
       if (b.pricingGroup === "usd_basket" && a.pricingGroup !== "usd_basket") return 1;
-      return a.nameZh.localeCompare(b.nameZh, "zh");
+      return marketName(a, locale).localeCompare(marketName(b, locale), locale);
     });
     const blocks: Array<{ type: "row"; row: PricedMarket } | { type: "us-basket"; rows: PricedMarket[] }> = [];
     const usAmount = us?.usdAmount ?? orderedBaseline[0]?.usdAmount ?? 0;
@@ -66,7 +79,7 @@ export function PriceDesk({ catalog, rates }: Props) {
       blocks.push({ type: "us-basket", rows: orderedBaseline });
     }
     return blocks;
-  }, [tableRows, us]);
+  }, [locale, tableRows, us]);
   const cheapest = ranked[0];
   const dearest = ranked[ranked.length - 1];
   const spread = cheapest && dearest && cheapest.usdAmount > 0 ? dearest.usdAmount / cheapest.usdAmount : null;
@@ -89,24 +102,26 @@ export function PriceDesk({ catalog, rates }: Props) {
   const labels = useMemo(() => {
     const map = new Map<string, string>();
     for (const row of priced) {
-      map.set(row.iso2, `${formatMoney(row.localAmount, row.currency ?? "USD")} · ${formatMoney(row.displayAmount, display)}`);
+      map.set(row.iso2, `${money(row.localAmount, row.currency ?? "USD")} · ${money(row.displayAmount, display)}`);
     }
     return map;
-  }, [display, priced]);
+  }, [display, locale, priced]);
 
   const hits = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return [];
     return catalog.markets
       .filter((market) => {
+        const localized = marketName(market, locale).toLowerCase();
         return (
           market.iso2.toLowerCase().includes(needle) ||
           market.nameEn.toLowerCase().includes(needle) ||
-          market.nameZh.toLowerCase().includes(needle)
+          market.nameZh.toLowerCase().includes(needle) ||
+          localized.includes(needle)
         );
       })
       .slice(0, 8);
-  }, [catalog.markets, query]);
+  }, [catalog.markets, locale, query]);
 
   const ticker = ranked.filter((row) => row.pricingGroup === "localized").slice(0, 24);
 
@@ -115,15 +130,16 @@ export function PriceDesk({ catalog, rates }: Props) {
       <header className="border-b border-rule">
         <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">Web list prices · not a checkout</p>
-            <h1 className="mt-1 font-display text-4xl tracking-tight">
+            <LanguageSwitcher />
+            <h1 className="mt-3 font-display text-4xl tracking-tight">
               <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
                 <SiteLogo className="h-9 w-9" />
                 XPrice
               </Link>
             </h1>
             <p className="mt-1 max-w-3xl text-sm text-mute">
-              比较各国 X Premium 网页标价，由 <XHandleLink /> 开发。iOS / Android 因商店抽成通常更高。
+              {t("taglineLead")} <XHandleLink />
+              {t("taglineTail")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -134,14 +150,14 @@ export function PriceDesk({ catalog, rates }: Props) {
             />
             <Segment
               value={cycle}
-              options={CYCLES.map((value) => ({ value, label: CYCLE_LABEL[value] }))}
+              options={CYCLES.map((value) => ({ value, label: cycleLabel(locale, value) }))}
               onChange={setCycle}
             />
             <Segment
               value={display}
               options={[
-                { value: "CNY", label: "人民币" },
-                { value: "USD", label: "美元" },
+                { value: "CNY", label: t("cny") },
+                { value: "USD", label: t("usd") },
               ]}
               onChange={setDisplay}
             />
@@ -151,7 +167,7 @@ export function PriceDesk({ catalog, rates }: Props) {
           <div className="ticker-track flex w-max gap-8 whitespace-nowrap px-4 font-mono text-xs text-amber">
             {[...ticker, ...ticker].map((row, index) => (
               <span key={`${row.iso2}-${index}`}>
-                {row.nameZh} {formatMoney(row.displayAmount, display)}
+                {marketName(row, locale)} {money(row.displayAmount, display)}
               </span>
             ))}
           </div>
@@ -159,13 +175,21 @@ export function PriceDesk({ catalog, rates }: Props) {
       </header>
 
       <section className="grid grid-cols-2 gap-px border-b border-rule bg-rule md:grid-cols-4">
-        <Stat label="标价最低" value={cheapest ? cheapest.nameZh : "—"} detail={cheapest ? formatMoney(cheapest.displayAmount, display) : ""} />
-        <Stat label="标价最高" value={dearest ? dearest.nameZh : "—"} detail={dearest ? formatMoney(dearest.displayAmount, display) : ""} />
-        <Stat label="高低价差" value={spread ? `${spread.toFixed(1)}×` : "—"} detail="按美元折算" />
         <Stat
-          label="整理日期"
+          label={t("cheapest")}
+          value={cheapest ? marketName(cheapest, locale) : "—"}
+          detail={cheapest ? money(cheapest.displayAmount, display) : ""}
+        />
+        <Stat
+          label={t("dearest")}
+          value={dearest ? marketName(dearest, locale) : "—"}
+          detail={dearest ? money(dearest.displayAmount, display) : ""}
+        />
+        <Stat label={t("spread")} value={spread ? `${spread.toFixed(1)}×` : "—"} detail={t("spreadDetail")} />
+        <Stat
+          label={t("compiledAt")}
           value={formatRateDate(catalog.generatedAt)}
-          detail={`汇率 ${formatRateDate(rates.date)}`}
+          detail={`${t("fx")} ${formatRateDate(rates.date)}`}
         />
       </section>
 
@@ -174,13 +198,13 @@ export function PriceDesk({ catalog, rates }: Props) {
           <div className="flex flex-col gap-3 border-b border-rule px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="relative max-w-md flex-1">
               <label className="sr-only" htmlFor="country-search">
-                搜索国家或地区
+                {t("searchLabel")}
               </label>
               <input
                 id="country-search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="搜索国家、地区或代码，例如 日本 / JP"
+                placeholder={t("searchPlaceholder")}
                 className="w-full border border-rule bg-white px-3 py-2 text-sm text-cream placeholder:text-mute"
               />
               {hits.length > 0 ? (
@@ -195,7 +219,7 @@ export function PriceDesk({ catalog, rates }: Props) {
                           setQuery("");
                         }}
                       >
-                        <span>{market.nameZh}</span>
+                        <span>{marketName(market, locale)}</span>
                         <span className="font-mono text-mute">{market.iso2}</span>
                       </button>
                     </li>
@@ -249,21 +273,19 @@ export function PriceDesk({ catalog, rates }: Props) {
 
       <section className="border-t border-rule px-4 py-6">
         <div className="mb-4">
-          <h2 className="font-display text-2xl">完整标价表</h2>
-          <p className="text-sm text-mute">
-            列出全部 {tableRows.length} 个有标价的市场。美区同价默认折叠，点击展开。美价折扣按美国 Web 标价折算，负数为更便宜。
-          </p>
+          <h2 className="font-display text-2xl">{t("tableTitle")}</h2>
+          <p className="text-sm text-mute">{t("tableHint", { n: tableRows.length })}</p>
         </div>
         <div className="overflow-x-auto border border-rule">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="bg-panel font-mono text-[11px] uppercase tracking-[0.12em] text-mute">
               <tr>
-                <th className="px-3 py-2 font-medium">市场</th>
-                <th className="px-3 py-2 font-medium">分组</th>
-                <th className="px-3 py-2 font-medium">本币</th>
-                <th className="px-3 py-2 font-medium">{display === "CNY" ? "人民币" : "美元"}</th>
-                <th className="px-3 py-2 font-medium">年付等效月费</th>
-                <th className="px-3 py-2 font-medium">美价折扣</th>
+                <th className="px-3 py-2 font-medium">{t("colMarket")}</th>
+                <th className="px-3 py-2 font-medium">{t("colGroup")}</th>
+                <th className="px-3 py-2 font-medium">{t("colLocal")}</th>
+                <th className="px-3 py-2 font-medium">{display === "CNY" ? t("cny") : t("usd")}</th>
+                <th className="px-3 py-2 font-medium">{t("colAnnualMonth")}</th>
+                <th className="px-3 py-2 font-medium">{t("colUsDiscount")}</th>
               </tr>
             </thead>
             <tbody>
@@ -300,14 +322,13 @@ export function PriceDesk({ catalog, rates }: Props) {
 
       <footer className="border-t border-rule px-4 py-6 text-sm text-mute">
         <p>
-          本站数据由 <XHandleLink /> 整理，如有误差，请以官方为准。
+          {t("footerLead")} <XHandleLink />
+          {t("footerTail")}
         </p>
-        <p className="mt-2">
-          免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。iOS / Android 因应用商店抽成，通常更高。本站不提供换区、虚拟地址、礼品卡或代订服务。
-        </p>
+        <p className="mt-2">{t("disclaimer")}</p>
         <p className="mt-2">
           <Link className="text-amber hover:text-cream" href={XPRICE_METHODOLOGY_PATH}>
-            方法与口径
+            {t("methodology")}
           </Link>
         </p>
       </footer>
@@ -354,16 +375,17 @@ function PriceRow({
   onSelect: (iso: string) => void;
   inset?: boolean;
 }) {
+  const { locale } = useLocale();
   return (
     <tr className="cursor-pointer border-t border-rule hover:bg-raised" onClick={() => onSelect(row.iso2)}>
       <td className={`px-3 py-2 ${inset ? "pl-8" : ""}`}>
-        {row.nameZh}
+        {marketName(row, locale)}
         <span className="ml-2 font-mono text-xs text-mute">{row.iso2}</span>
       </td>
-      <td className="px-3 py-2 text-mute">{GROUP_LABEL[row.pricingGroup]}</td>
-      <td className="px-3 py-2 font-mono">{formatMoney(row.localAmount, row.currency ?? "USD")}</td>
-      <td className="px-3 py-2 font-mono text-amber">{formatMoney(row.displayAmount, display)}</td>
-      <td className="px-3 py-2 font-mono">{formatMoney(row.equivalentMonthDisplay, display)}</td>
+      <td className="px-3 py-2 text-mute">{groupLabel(locale, row.pricingGroup)}</td>
+      <td className="px-3 py-2 font-mono">{formatMoney(row.localAmount, row.currency ?? "USD", locale)}</td>
+      <td className="px-3 py-2 font-mono text-amber">{formatMoney(row.displayAmount, display, locale)}</td>
+      <td className="px-3 py-2 font-mono">{formatMoney(row.equivalentMonthDisplay, display, locale)}</td>
       <td className="px-3 py-2">
         <UsDiscount row={row} us={us} />
       </td>
@@ -388,6 +410,7 @@ function UsBasketRows({
   onToggle: () => void;
   onSelect: (iso: string) => void;
 }) {
+  const { locale, t } = useLocale();
   return (
     <>
       <tr
@@ -397,16 +420,18 @@ function UsBasketRows({
       >
         <td className="px-3 py-2">
           <span className="mr-2 inline-block font-mono text-amber">{open ? "▾" : "▸"}</span>
-          美区同价
-          <span className="ml-2 font-mono text-xs text-mute">{rows.length} 个市场</span>
-          <span className="ml-2 text-xs text-mute">{open ? "点击收起" : "点击展开"}</span>
+          {t("usSamePrice")}
+          <span className="ml-2 font-mono text-xs text-mute">{t("marketCount", { n: rows.length })}</span>
+          <span className="ml-2 text-xs text-mute">{open ? t("clickCollapse") : t("clickExpand")}</span>
         </td>
-        <td className="px-3 py-2 text-mute">{GROUP_LABEL[representative.pricingGroup]}</td>
-        <td className="px-3 py-2 font-mono">{formatMoney(representative.localAmount, representative.currency ?? "USD")}</td>
-        <td className="px-3 py-2 font-mono text-amber">{formatMoney(representative.displayAmount, display)}</td>
-        <td className="px-3 py-2 font-mono">{formatMoney(representative.equivalentMonthDisplay, display)}</td>
+        <td className="px-3 py-2 text-mute">{groupLabel(locale, representative.pricingGroup)}</td>
+        <td className="px-3 py-2 font-mono">
+          {formatMoney(representative.localAmount, representative.currency ?? "USD", locale)}
+        </td>
+        <td className="px-3 py-2 font-mono text-amber">{formatMoney(representative.displayAmount, display, locale)}</td>
+        <td className="px-3 py-2 font-mono">{formatMoney(representative.equivalentMonthDisplay, display, locale)}</td>
         <td className="px-3 py-2">
-          <span className="text-mute">基准</span>
+          <span className="text-mute">{t("baseline")}</span>
         </td>
       </tr>
       {open
@@ -419,10 +444,11 @@ function UsBasketRows({
 }
 
 function UsDiscount({ row, us }: { row: PricedMarket; us?: PricedMarket }) {
+  const { t } = useLocale();
   const vs = vsUnitedStates(row, us);
   if (vs == null) return <span className="text-mute">—</span>;
   if (row.iso2 === "US" || Math.abs(vs) < 0.0005) {
-    return <span className="text-mute">基准</span>;
+    return <span className="text-mute">{t("baseline")}</span>;
   }
   return <span className={`font-mono ${vs < 0 ? "text-cheap" : "text-dear"}`}>{formatSignedPct(vs)}</span>;
 }
@@ -438,9 +464,10 @@ function Stat({ label, value, detail }: { label: string; value: string; detail: 
 }
 
 function Legend() {
+  const { t } = useLocale();
   return (
     <div className="flex items-center gap-3 text-xs text-mute">
-      <span>便宜</span>
+      <span>{t("cheap")}</span>
       <div className="flex h-2 w-40 overflow-hidden">
         <span className="h-full flex-1 bg-[#2f6f63]" />
         <span className="h-full flex-1 bg-[#7d9a63]" />
@@ -448,7 +475,7 @@ function Legend() {
         <span className="h-full flex-1 bg-[#d9894a]" />
         <span className="h-full flex-1 bg-[#c4471c]" />
       </div>
-      <span>贵</span>
+      <span>{t("dear")}</span>
     </div>
   );
 }
@@ -464,10 +491,11 @@ function RankColumn({
   display: DisplayCurrency;
   onSelect: (iso: string) => void;
 }) {
+  const { t } = useLocale();
   return (
     <div className="grid h-full grid-rows-2 bg-panel">
-      <RankList title="标价最低" rows={cheapest} display={display} onSelect={onSelect} />
-      <RankList title="标价最高" rows={dearest} display={display} onSelect={onSelect} />
+      <RankList title={t("cheapest")} rows={cheapest} display={display} onSelect={onSelect} />
+      <RankList title={t("dearest")} rows={dearest} display={display} onSelect={onSelect} />
     </div>
   );
 }
@@ -483,6 +511,7 @@ function RankList({
   display: DisplayCurrency;
   onSelect: (iso: string) => void;
 }) {
+  const { locale } = useLocale();
   return (
     <div className="border-b border-rule px-4 py-3">
       <h2 className="mb-2 font-mono text-[11px] uppercase tracking-[0.16em] text-mute">{title}</h2>
@@ -492,9 +521,9 @@ function RankList({
             <button type="button" className="flex w-full items-baseline justify-between gap-3 text-left" onClick={() => onSelect(row.iso2)}>
               <span className="text-sm">
                 <span className="mr-2 font-mono text-mute">{index + 1}</span>
-                {row.nameZh}
+                {marketName(row, locale)}
               </span>
-              <span className="font-mono text-sm text-amber">{formatMoney(row.displayAmount, display)}</span>
+              <span className="font-mono text-sm text-amber">{formatMoney(row.displayAmount, display, locale)}</span>
             </button>
           </li>
         ))}

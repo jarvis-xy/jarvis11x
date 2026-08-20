@@ -1,3 +1,4 @@
+import { NUMBER_LOCALE, type Locale } from "./i18n";
 import type { Cycle, DisplayCurrency, Market, PricedMarket, Rates, Tier } from "./types";
 
 const ZERO_DECIMAL = new Set([
@@ -69,10 +70,10 @@ export function priceMarket(
   };
 }
 
-export function formatMoney(amount: number, currency: string): string {
+export function formatMoney(amount: number, currency: string, locale: Locale = "zh"): string {
   const digits = ZERO_DECIMAL.has(currency) ? 0 : amount >= 100 ? 0 : 2;
   try {
-    return new Intl.NumberFormat("zh-CN", {
+    return new Intl.NumberFormat(NUMBER_LOCALE[locale], {
       style: "currency",
       currency,
       currencyDisplay: currency === "CNY" || currency === "USD" ? "narrowSymbol" : "code",

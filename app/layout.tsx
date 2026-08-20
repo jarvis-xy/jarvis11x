@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Chivo_Mono, Figtree, Syne } from "next/font/google";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -25,8 +26,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
-      <body className={`${display.variable} ${sans.variable} ${mono.variable} font-sans antialiased`}>{children}</body>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body className={`${display.variable} ${sans.variable} ${mono.variable} font-sans antialiased`}>
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
