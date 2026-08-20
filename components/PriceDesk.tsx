@@ -122,10 +122,9 @@ export function PriceDesk({ catalog, rates }: Props) {
                 XPrice
               </Link>
             </h1>
-            <p className="mt-1 max-w-xl text-sm text-mute">
-              X Premium 官方各国 Web 标价观测站。本站由 <XHandleLink /> 开发。
+            <p className="mt-1 max-w-3xl text-sm text-mute">
+              比较各国 X Premium 网页标价，由 <XHandleLink /> 开发。iOS / Android 因商店抽成通常更高。
             </p>
-            <p className="mt-1 max-w-xl text-sm text-mute">本站为网页标价。iOS / Android 因应用商店抽成，通常更高。</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Segment
