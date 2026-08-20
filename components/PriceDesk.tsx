@@ -16,7 +16,7 @@ import type { Catalog, Cycle, DisplayCurrency, PricedMarket, Rates, Tier } from 
 
 function MapLoading() {
   const { t } = useLocale();
-  return <div className="flex h-[42vw] min-h-[240px] items-center justify-center text-sm text-mute">{t("mapLoading")}</div>;
+  return <div className="flex h-full min-h-[240px] items-center justify-center bg-white text-sm text-mute">{t("mapLoading")}</div>;
 }
 
 const WorldMap = dynamic(() => import("@/components/WorldMap").then((mod) => mod.WorldMap), {
@@ -127,129 +127,133 @@ export function PriceDesk({ catalog, rates }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-cream">
-      <header className="border-b border-rule">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <h1 className="inline-flex items-end font-display text-3xl tracking-tight">
-            <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
-              <SiteLogo className="h-8 w-8" />
-              XPrice
-            </Link>
-            <XBylineBadge className="mb-1 ml-1.5" />
-          </h1>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <LanguageSwitcher />
-            <Segment
-              value={tier}
-              options={TIERS.map((value) => ({ value, label: TIER_LABEL[value] }))}
-              onChange={setTier}
-            />
-            <Segment
-              value={cycle}
-              options={CYCLES.map((value) => ({ value, label: cycleLabel(locale, value) }))}
-              onChange={setCycle}
-            />
-            <Segment
-              value={display}
-              options={[
-                { value: "CNY", label: t("cny") },
-                { value: "USD", label: t("usd") },
-              ]}
-              onChange={setDisplay}
-            />
-          </div>
-        </div>
-        <div className="relative overflow-hidden border-t border-rule bg-panel py-2">
-          <div className="ticker-track flex w-max gap-8 whitespace-nowrap px-4 font-mono text-xs text-amber">
-            {[...ticker, ...ticker].map((row, index) => (
-              <span key={`${row.iso2}-${index}`}>
-                {marketName(row, locale)} {money(row.displayAmount, display)}
-              </span>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      <section className="grid grid-cols-2 gap-px border-b border-rule bg-rule md:grid-cols-4">
-        <Stat
-          label={t("cheapest")}
-          value={cheapest ? marketName(cheapest, locale) : "—"}
-          detail={cheapest ? money(cheapest.displayAmount, display) : ""}
-        />
-        <Stat
-          label={t("dearest")}
-          value={dearest ? marketName(dearest, locale) : "—"}
-          detail={dearest ? money(dearest.displayAmount, display) : ""}
-        />
-        <Stat label={t("spread")} value={spread ? `${spread.toFixed(1)}×` : "—"} detail={t("spreadDetail")} />
-        <Stat
-          label={t("compiledAt")}
-          value={formatRateDate(catalog.generatedAt)}
-          detail={`${t("fx")} ${formatRateDate(rates.date)}`}
-        />
-      </section>
-
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div>
-          <div className="flex flex-col gap-3 border-b border-rule px-4 py-3 md:flex-row md:items-center md:justify-between">
-            <div className="relative max-w-md flex-1">
-              <label className="sr-only" htmlFor="country-search">
-                {t("searchLabel")}
-              </label>
-              <input
-                id="country-search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className="w-full border border-rule bg-white px-3 py-2 text-sm text-cream placeholder:text-mute"
+      <div className="flex h-dvh min-h-[560px] flex-col">
+        <header className="shrink-0 border-b border-rule">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <h1 className="inline-flex items-end font-display text-3xl tracking-tight">
+              <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
+                <SiteLogo className="h-8 w-8" />
+                XPrice
+              </Link>
+              <XBylineBadge className="mb-1 ml-1.5" />
+            </h1>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <LanguageSwitcher />
+              <Segment
+                value={tier}
+                options={TIERS.map((value) => ({ value, label: TIER_LABEL[value] }))}
+                onChange={setTier}
               />
-              {hits.length > 0 ? (
-                <ul className="absolute z-20 mt-1 w-full border border-rule bg-panel">
-                  {hits.map((market) => (
-                    <li key={market.iso2}>
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-raised"
-                        onClick={() => {
-                          setSelectedIso(market.iso2);
-                          setQuery("");
-                        }}
-                      >
-                        <span>{marketName(market, locale)}</span>
-                        <span className="font-mono text-mute">{market.iso2}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              <Segment
+                value={cycle}
+                options={CYCLES.map((value) => ({ value, label: cycleLabel(locale, value) }))}
+                onChange={setCycle}
+              />
+              <Segment
+                value={display}
+                options={[
+                  { value: "CNY", label: t("cny") },
+                  { value: "USD", label: t("usd") },
+                ]}
+                onChange={setDisplay}
+              />
             </div>
-            <Legend />
           </div>
-          <WorldMap amounts={amounts} labels={labels} selectedIso={selectedIso} onSelect={setSelectedIso} />
-        </div>
-        <div className="hidden min-h-[320px] lg:block">
-          {selectedIso ? (
-            <CountryPanel
-              iso={selectedIso}
-              priced={selected}
-              us={us}
-              display={display}
-              tier={tier}
-              cycle={cycle}
-              onClose={() => setSelectedIso(null)}
-            />
-          ) : (
-            <RankColumn
-              cheapest={ranked.slice(0, 8)}
-              dearest={[...ranked].reverse().slice(0, 8)}
-              display={display}
-              onSelect={setSelectedIso}
-            />
-          )}
+          <div className="relative overflow-hidden border-t border-rule bg-panel py-2">
+            <div className="ticker-track flex w-max gap-8 whitespace-nowrap px-4 font-mono text-xs text-amber">
+              {[...ticker, ...ticker].map((row, index) => (
+                <span key={`${row.iso2}-${index}`}>
+                  {marketName(row, locale)} {money(row.displayAmount, display)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        <section className="grid shrink-0 grid-cols-2 gap-px border-b border-rule bg-rule md:grid-cols-4">
+          <Stat
+            label={t("cheapest")}
+            value={cheapest ? marketName(cheapest, locale) : "—"}
+            detail={cheapest ? money(cheapest.displayAmount, display) : ""}
+          />
+          <Stat
+            label={t("dearest")}
+            value={dearest ? marketName(dearest, locale) : "—"}
+            detail={dearest ? money(dearest.displayAmount, display) : ""}
+          />
+          <Stat label={t("spread")} value={spread ? `${spread.toFixed(1)}×` : "—"} detail={t("spreadDetail")} />
+          <Stat
+            label={t("compiledAt")}
+            value={formatRateDate(catalog.generatedAt)}
+            detail={`${t("fx")} ${formatRateDate(rates.date)}`}
+          />
+        </section>
+
+        <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="flex min-h-0 flex-col bg-white">
+            <div className="flex shrink-0 flex-col gap-3 border-b border-rule bg-white px-4 py-3 md:flex-row md:items-center md:justify-between">
+              <div className="relative max-w-md flex-1">
+                <label className="sr-only" htmlFor="country-search">
+                  {t("searchLabel")}
+                </label>
+                <input
+                  id="country-search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t("searchPlaceholder")}
+                  className="w-full border border-rule bg-white px-3 py-2 text-sm text-cream placeholder:text-mute"
+                />
+                {hits.length > 0 ? (
+                  <ul className="absolute z-20 mt-1 w-full border border-rule bg-panel">
+                    {hits.map((market) => (
+                      <li key={market.iso2}>
+                        <button
+                          type="button"
+                          className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-raised"
+                          onClick={() => {
+                            setSelectedIso(market.iso2);
+                            setQuery("");
+                          }}
+                        >
+                          <span>{marketName(market, locale)}</span>
+                          <span className="font-mono text-mute">{market.iso2}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+              <Legend />
+            </div>
+            <div className="relative min-h-0 flex-1">
+              <WorldMap amounts={amounts} labels={labels} selectedIso={selectedIso} onSelect={setSelectedIso} />
+            </div>
+          </div>
+          <div className="hidden min-h-0 overflow-y-auto border-l border-rule bg-panel lg:block">
+            {selectedIso ? (
+              <CountryPanel
+                iso={selectedIso}
+                priced={selected}
+                us={us}
+                display={display}
+                tier={tier}
+                cycle={cycle}
+                onClose={() => setSelectedIso(null)}
+              />
+            ) : (
+              <RankColumn
+                cheapest={ranked.slice(0, 8)}
+                dearest={[...ranked].reverse().slice(0, 8)}
+                display={display}
+                onSelect={setSelectedIso}
+              />
+            )}
+          </div>
         </div>
       </div>
 
       {selectedIso ? (
-        <div className="lg:hidden">
+        <div className="border-t border-rule lg:hidden">
           <CountryPanel
             iso={selectedIso}
             priced={selected}

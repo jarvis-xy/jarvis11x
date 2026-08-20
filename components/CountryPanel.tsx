@@ -27,7 +27,7 @@ export function CountryPanel({ iso, priced, us, display, tier, cycle, onClose }:
   const localizedName = marketName(market, locale);
 
   return (
-    <aside className="flex h-full flex-col border-l border-rule bg-panel">
+    <aside className="flex h-full flex-col bg-panel">
       <div className="flex items-start justify-between gap-3 border-b border-rule px-4 py-3">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-mute">{iso}</div>

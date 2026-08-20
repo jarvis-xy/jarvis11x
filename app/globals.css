@@ -48,14 +48,18 @@ body {
   .ticker-track {
     animation: none;
   }
+
+  .map-land {
+    transition: none;
+  }
 }
 
 .map-land {
   stroke: #ffffff;
-  stroke-width: 0.6;
+  stroke-width: 0.55;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  transition: fill 160ms ease;
+  transition: fill 160ms ease, stroke 160ms ease, stroke-width 160ms ease;
 }
 
 .map-land:focus,
@@ -65,10 +69,62 @@ body {
 
 .map-land[data-active="true"] {
   stroke: #c05621;
-  stroke-width: 1.4;
+  stroke-width: 1.6;
 }
 
 .map-land[data-hover="true"] {
   stroke: #1c1917;
   stroke-width: 1.2;
+}
+
+.globe-stage {
+  isolation: isolate;
+  background: #ffffff;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.globe-stage:active {
+  cursor: grabbing;
+}
+
+.globe-stage svg,
+.globe-stage path {
+  touch-action: none;
+  -webkit-user-drag: none;
+}
+
+.globe-stage__wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.globe-graticule {
+  fill: none;
+  stroke: #8a8176;
+  stroke-width: 0.45;
+  stroke-opacity: 0.22;
+  pointer-events: none;
+}
+
+.globe-outline {
+  stroke: #cbb892;
+  stroke-width: 1.2;
+  stroke-opacity: 0.9;
+  pointer-events: none;
+}
+
+.globe-pin {
+  stroke: #ffffff;
+  stroke-width: 1.4;
+}
+
+.globe-pin-ring {
+  fill: none;
+  stroke: #c05621;
+  stroke-width: 1;
+  stroke-opacity: 0.55;
 }
