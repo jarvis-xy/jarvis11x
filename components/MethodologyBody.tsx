@@ -14,12 +14,16 @@ export function MethodologyBody() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 text-cream">
-      <LanguageSwitcher />
-      <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-amber">{t("methKicker")}</p>
-      <h1 className="mt-2 flex items-center gap-3 font-display text-4xl">
-        <SiteLogo className="h-9 w-9" />
-        {t("methTitle")}
-      </h1>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber">{t("methKicker")}</p>
+          <h1 className="mt-2 flex items-center gap-3 font-display text-4xl">
+            <SiteLogo className="h-9 w-9" />
+            {t("methTitle")}
+          </h1>
+        </div>
+        <LanguageSwitcher />
+      </div>
       <div className="mt-6 space-y-4 text-sm leading-7 text-mute">
         <p>
           {t("methP1Lead")} <XHandleLink className="text-amber" />

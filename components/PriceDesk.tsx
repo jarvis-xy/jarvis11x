@@ -7,7 +7,7 @@ import { CountryPanel } from "@/components/CountryPanel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/components/LocaleProvider";
 import { SiteLogo } from "@/components/SiteLogo";
-import { XHandleLink } from "@/components/XHandleLink";
+import { XBylineBadge, XHandleLink } from "@/components/XHandleLink";
 import { cycleLabel, groupLabel, marketName } from "@/lib/i18n";
 import { formatMoney, formatSignedPct, TIER_LABEL } from "@/lib/money";
 import { isUnitedStatesBaseline, priceAll, rankUnique, vsUnitedStates } from "@/lib/ranking";
@@ -128,21 +128,16 @@ export function PriceDesk({ catalog, rates }: Props) {
   return (
     <div className="min-h-screen bg-white text-cream">
       <header className="border-b border-rule">
-        <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <h1 className="inline-flex items-end font-display text-3xl tracking-tight">
+            <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
+              <SiteLogo className="h-8 w-8" />
+              XPrice
+            </Link>
+            <XBylineBadge className="mb-1 ml-1.5" />
+          </h1>
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <LanguageSwitcher />
-            <h1 className="mt-3 font-display text-4xl tracking-tight">
-              <Link href={XPRICE_PATH} className="inline-flex items-center gap-2.5">
-                <SiteLogo className="h-9 w-9" />
-                XPrice
-              </Link>
-            </h1>
-            <p className="mt-1 max-w-3xl text-sm text-mute">
-              {t("taglineLead")} <XHandleLink />
-              {t("taglineTail")}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
             <Segment
               value={tier}
               options={TIERS.map((value) => ({ value, label: TIER_LABEL[value] }))}
