@@ -125,6 +125,7 @@ export function PriceDesk({ catalog, rates }: Props) {
             <p className="mt-1 max-w-xl text-sm text-mute">
               X Premium 官方各国 Web 标价观测站。本站由 <XHandleLink /> 开发。
             </p>
+            <p className="mt-1 max-w-xl text-sm text-mute">本站为网页标价。iOS / Android 因应用商店抽成，通常更高。</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Segment
@@ -303,7 +304,7 @@ export function PriceDesk({ catalog, rates }: Props) {
           本站数据由 <XHandleLink /> 整理，如有误差，请以官方为准。
         </p>
         <p className="mt-2">
-          免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。本站不提供换区、虚拟地址、礼品卡或代订服务。
+          免责声明：XPrice 与 X Corp. 无关联，仅供浏览参考，不构成购买建议。展示价格为整理后的 Web 标价及公开中间价折算，未含税与支付手续费，可能与收银台实际应付金额不一致。iOS / Android 因应用商店抽成，通常更高。本站不提供换区、虚拟地址、礼品卡或代订服务。
         </p>
         <p className="mt-2">
           <Link className="text-amber hover:text-cream" href={XPRICE_METHODOLOGY_PATH}>
